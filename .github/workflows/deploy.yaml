@@ -15,29 +15,14 @@ jobs:
 
     - name: Setup SSH
       run: |
-        echo "🔐 Setting up SSH..."
-        mkdir -p $HOME/.ssh
-        chmod 700 $HOME/.ssh
-
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > $HOME/.ssh/id_ed25519
-        chmod 600 $HOME/.ssh/id_ed25519
-
-        # Add server to known_hosts (anti error)
-        ssh-keyscan -p 8022 -H ${{ secrets.SERVER_IP }} >> $HOME/.ssh/known_hosts 2>/dev/null || true
-
-    - name: Test SSH Connection
-      run: |
-        echo "🔎 Testing SSH connection..."
-        ssh -o StrictHostKeyChecking=no \
-            -i $HOME/.ssh/id_ed25519 \
-            -p 8022 \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "echo ✅ SSH Connected"
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/tes_server_polindra
+        chmod 600 ~/.ssh/tes_server_polindra
+        ssh-keyscan -p 8022 -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
     - name: Deploy to Server
       run: |
-        echo "🚀 Deploying files..."
         rsync -avz --delete \
-          -e "ssh -o StrictHostKeyChecking=no -p 8022 -i $HOME/.ssh/id_ed25519" \
-          ./ \
-          ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.DEPLOY_PATH }}
+        -e "ssh -p 8022 -i ~/.ssh/tes_server_polindra" \
+        ./ \
+        ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.DEPLOY_PATH }}
